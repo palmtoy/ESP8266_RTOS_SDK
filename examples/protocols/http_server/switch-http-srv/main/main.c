@@ -3,8 +3,10 @@
 
 static const char *TAG = "SWITCH-HTTP-SRV";
 
-#define BLINK_GPIO_POWER 0
-#define BLINK_GPIO_B 2
+#define SWITCH_GPIO_POWER 0
+#define LED_GPIO_BLUE 2
+#define GPIO_LV_HIGH 0
+#define GPIO_LV_LOW 1
 
 static void initialise_mdns(void)
 {
@@ -17,19 +19,21 @@ static void initialise_mdns(void)
 }
 
 static void initLEDs(void) {
-    gpio_set_direction(BLINK_GPIO_POWER, GPIO_MODE_OUTPUT);
-    gpio_set_direction(BLINK_GPIO_B, GPIO_MODE_OUTPUT);
+    gpio_set_direction(SWITCH_GPIO_POWER, GPIO_MODE_OUTPUT);
+    gpio_set_direction(LED_GPIO_BLUE, GPIO_MODE_OUTPUT);
+    gpio_set_level(SWITCH_GPIO_POWER, GPIO_LV_LOW);
+    gpio_set_level(LED_GPIO_BLUE, GPIO_LV_LOW);
 }
 
 static void switchLEDs(bool bSwitchOn)
 {
     if (bSwitchOn) {
-        gpio_set_level(BLINK_GPIO_POWER, 1);
-        gpio_set_level(BLINK_GPIO_B, 1);
+        gpio_set_level(SWITCH_GPIO_POWER, GPIO_LV_HIGH);
+        gpio_set_level(LED_GPIO_BLUE, GPIO_LV_HIGH);
         ESP_LOGI(TAG, "Turn on the power LED");
     } else {
-        gpio_set_level(BLINK_GPIO_POWER, 0);
-        gpio_set_level(BLINK_GPIO_B, 0);
+        gpio_set_level(SWITCH_GPIO_POWER, GPIO_LV_LOW);
+        gpio_set_level(LED_GPIO_BLUE, GPIO_LV_LOW);
         ESP_LOGI(TAG, "Turn off the power LED");
     }
 }
