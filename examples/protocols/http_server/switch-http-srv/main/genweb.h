@@ -65,7 +65,7 @@ char* getSwitchStatusText() {
 }
 
 char* _doGenWebPage() {
-    char* strWebPage = malloc(3 * 1024);
+    char* strWebPage = malloc(1600);
     char* strHtmlTemplate = "\
 <html> \
 <head> \
