@@ -1,16 +1,12 @@
+#ifndef _SWITCH_GENWEB_H_
+#define _SWITCH_GENWEB_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/param.h>
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_netif.h"
-#include "esp_event.h"
-#include "protocol_examples_common.h"
-#include "nvs.h"
-#include "nvs_flash.h"
-#include <esp_http_server.h>
-#include "mdns.h"
-#include "driver/gpio.h"
 
 struct
 {
@@ -65,10 +61,12 @@ char* getSwitchStatusText() {
 }
 
 char* _doGenWebPage() {
-    char* strWebPage = malloc(1600);
+    char* strWebPage = malloc(2048);
     char* strHtmlTemplate = "\
 <html> \
+\
 <head> \
+    <title>Smart Relay Controller</title>\
     <style> \
         html { \
             font-family: Arial; \
@@ -101,7 +99,7 @@ char* _doGenWebPage() {
 \
 <body> \
     <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
-    <h1 style=\"font-size:39px\">ESP01S Relay Controller :> </h1> \
+    <h1 style=\"font-size:39px\">Smart Relay Controller :></h1> \
     <h2 style=\"font-size:36px;color: %s\">Switch Status: <strong>%s</strong></h2> \
     <p> \
         <a href=\"?switch_on\"><button %s class=\"buttonOn\">Switch ON</button></a> \
@@ -109,6 +107,8 @@ char* _doGenWebPage() {
     <p> \
         <a href=\"?switch_off\"><button %s class=\"buttonOff\">Switch OFF</button></a> \
     </p> \
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
+    <a href=\"?wifi_config_page\" style=\"font-size:23px\">WiFi Config </a> \
 </body> \
 </html> \
 ";
@@ -125,3 +125,9 @@ char* getWebPage(bool bStatusChange, bool switchStatus) {
     }
     return _doGenWebPage();
 }
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* _SWITCH_GENWEB_H_ */
