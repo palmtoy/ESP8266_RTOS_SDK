@@ -11,21 +11,44 @@ extern "C" {
 #include "esp_event.h"
 #include "esp_log.h"
 
-#define AP_NAME_PREFIX  CONFIG_ESP_WIFI_SSID
-#define AP_WIFI_PASS    CONFIG_ESP_WIFI_PASSWORD
-#define AP_MAX_CONN     CONFIG_ESP_MAX_STA_CONN
+#define AP_NAME_PREFIX   CONFIG_ESP_WIFI_SSID
+#define AP_WIFI_PASS     CONFIG_ESP_WIFI_PASSWORD
+#define AP_MAX_CONN      CONFIG_ESP_MAX_STA_CONN
+#define AP_NAME_LEN      16
+#define DOMAIN_NAME_LEN  (AP_NAME_LEN + 6)
 
 static const char *SOFT_AP_TAG = "SOFT-AP";
 
-static char* generate_ap_name()
-{
-    uint8_t mac[6];
-    char* apName;
-    esp_read_mac(mac, ESP_MAC_WIFI_STA);
-    if (-1 == asprintf(&apName, "%s-%02x%02x", AP_NAME_PREFIX, mac[4], mac[5])) {
-        abort();
+char G_SOFT_AP[AP_NAME_LEN] = {0};
+char G_DOMAIN_NAME[DOMAIN_NAME_LEN] = {0};
+
+esp_err_t generate_ap_name() {
+    if (strlen(G_SOFT_AP) > 0) {
+        return ESP_OK;
     }
-    return apName;
+    uint8_t mac[6];
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    if (sprintf(G_SOFT_AP, "%s-%02x%02x", AP_NAME_PREFIX, mac[4], mac[5]) < 0) {
+        memset(G_SOFT_AP, '\0', AP_NAME_LEN);
+        memset(G_DOMAIN_NAME, '\0', DOMAIN_NAME_LEN);
+        return ESP_FAIL;
+    }
+    sprintf(G_DOMAIN_NAME, "%s.local", G_SOFT_AP);
+    return ESP_OK;
+}
+
+char* getSoftApName() {
+    if (generate_ap_name() == ESP_OK) {
+        return G_SOFT_AP;
+    }
+    return NULL;
+}
+
+char* getDomainName() {
+    if (generate_ap_name() == ESP_OK) {
+        return G_DOMAIN_NAME;
+    }
+    return NULL;
 }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
@@ -48,28 +71,27 @@ void wifi_init_softap()
 
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
 
-    char* tmpSoftApName = generate_ap_name();
-    char* softApName;
-    if (-1 == asprintf(&softApName, "%s.local", tmpSoftApName)) {
+    char* ssidName = getDomainName();
+    if (ssidName == NULL) {
+        ESP_LOGE(SOFT_AP_TAG, "Gen SSID name FAILED.");
         abort();
+        return;
     }
     wifi_config_t wifi_config = {
         .ap = {
-            .ssid_len = strlen(softApName),
+            .ssid_len = strlen(ssidName),
             .max_connection = AP_MAX_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK
         },
     };
-    strlcpy((char *) wifi_config.ap.ssid, softApName, sizeof(wifi_config.ap.ssid));
+    strlcpy((char *) wifi_config.ap.ssid, ssidName, sizeof(wifi_config.ap.ssid));
     strlcpy((char *) wifi_config.ap.password, AP_WIFI_PASS, sizeof(wifi_config.ap.password));
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_LOGI(SOFT_AP_TAG, "WIFI_INIT_SOFTAP finished. SSID:%s password:%s", softApName, AP_WIFI_PASS);
-    free(tmpSoftApName);
-    free(softApName);
+    ESP_LOGI(SOFT_AP_TAG, "WIFI_INIT_SOFTAP finished. SSID:%s password:%s", ssidName, AP_WIFI_PASS);
 }
 
 #ifdef __cplusplus

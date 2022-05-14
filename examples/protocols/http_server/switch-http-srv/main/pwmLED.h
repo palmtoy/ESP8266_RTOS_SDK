@@ -82,7 +82,7 @@ void stopPwmLED() {
     initPwmLED();
     G_RUNNING = false;
     if (G_PWMLED_HANDLE) {
-        // vTaskDelete(G_PWMLED_HANDLE);
+        vTaskDelete(G_PWMLED_HANDLE);
         _dimPwmLED();
         G_PWMLED_HANDLE = NULL;
     }

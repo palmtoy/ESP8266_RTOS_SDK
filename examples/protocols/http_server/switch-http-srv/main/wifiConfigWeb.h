@@ -36,6 +36,11 @@ char* _doGenWiFiConfigPage() {
             <input type=\"text\" placeholder=\"Password ( Case sensitive; Max 30 characters )\" id=\"pwd\" maxlength=30 style=\"width: 626px; height: 80px; font-size: 21pt; margin-top: 20px;\"> \
         </div> \
         <button onclick=\"save()\" style=\"margin-top: 50px; width: 200px; height: 80px; font-size: 25pt;\">Save</button> \
+        <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
+        <a href=\"/\" style=\"font-size: 30px\">Back</a> \
+        <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
+        <a href=\"https://github.com/palmtoy\" style=\"position: absolute; left: 6px; font-size: 16px\">Powered by LZG</a> \
+        <br/> \
     </div> \
     <script type=\"text/javascript\"> \
         function save() { \
@@ -45,7 +50,7 @@ char* _doGenWiFiConfigPage() {
             if (ssid === \"\") { \
                 alert(\"Please input WiFi SSID ...\"); \
             } else { \
-                fetch(\"http://%s.%s/wifi_config\", { \
+                fetch(\"http://%s/wifi_config\", { \
                     method: \"POST\", \
                     headers: { \
                         \"Accept\": \"application/json\", \
@@ -54,16 +59,15 @@ char* _doGenWiFiConfigPage() {
                     body: JSON.stringify({ ssid, pwd: password }) \
                 }); \
                 alert(\"Save OK.\"); \
-                setTimeout(() => { window.location.href = \"http://%s.%s/\"; }, 10000); \
+                setTimeout(() => { window.location.href = \"http://%s/\"; }, 9000); \
             } \
         } \
     </script> \
 </body> \
 </html> \
 ";
-    char* softApName = generate_ap_name();
-    sprintf(strWebPage, strHtmlTemplate, softApName, "local", softApName, "local");
-    free(softApName);
+    char* domainName = getDomainName();
+    sprintf(strWebPage, strHtmlTemplate, domainName, domainName);
     return strWebPage;
 }
 

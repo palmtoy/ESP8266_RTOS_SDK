@@ -26,10 +26,10 @@ struct S_SWITCH_OFF
     char disabled[9];
 } G_SWITCH_OFF_1 = { "red;", "" }, G_SWITCH_OFF_0 = { "gray;", "disabled" };
 
-static bool G_SWITCH_STATUE = false;
+static bool G_SWITCH_STATUS = false;
 
 struct S_SWITCH_ON* getSwitchOnStatus() {
-    if (G_SWITCH_STATUE) {
+    if (G_SWITCH_STATUS) {
         return &G_SWITCH_ON_1;
     } else {
         return &G_SWITCH_ON_0;
@@ -37,7 +37,7 @@ struct S_SWITCH_ON* getSwitchOnStatus() {
 }
 
 struct S_SWITCH_OFF* getSwitchOffStatus() {
-    if (G_SWITCH_STATUE) {
+    if (G_SWITCH_STATUS) {
         return &G_SWITCH_OFF_1;
     } else {
         return &G_SWITCH_OFF_0;
@@ -45,7 +45,7 @@ struct S_SWITCH_OFF* getSwitchOffStatus() {
 }
 
 char* getSwitchStatusColor() {
-    if (G_SWITCH_STATUE) {
+    if (G_SWITCH_STATUS) {
         return "green";
     } else {
         return "red";
@@ -53,7 +53,7 @@ char* getSwitchStatusColor() {
 }
 
 char* getSwitchStatusText() {
-    if (G_SWITCH_STATUE) {
+    if (G_SWITCH_STATUS) {
         return G_SWITCH_DICT.on;
     } else {
         return G_SWITCH_DICT.off;
@@ -61,7 +61,7 @@ char* getSwitchStatusText() {
 }
 
 char* _doGenWebPage() {
-    char* strWebPage = malloc(2048);
+    char* strWebPage = malloc(3072);
     char* strHtmlTemplate = "\
 <html> \
 \
@@ -102,27 +102,39 @@ char* _doGenWebPage() {
     <h1 style=\"font-size:39px\">Smart Relay Controller :></h1> \
     <h2 style=\"font-size:36px;color: %s\">Switch Status: <strong>%s</strong></h2> \
     <p> \
-        <a href=\"?switch_on\"><button %s class=\"buttonOn\">Switch ON</button></a> \
+        <button %s class=\"buttonOn\" onclick=\"switchOn()\">Switch ON</button> \
     </p> \
     <p> \
-        <a href=\"?switch_off\"><button %s class=\"buttonOff\">Switch OFF</button></a> \
+        <button %s class=\"buttonOff\" onclick=\"switchOff()\">Switch OFF</button> \
     </p> \
-    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/> \
     <a href=\"?wifi_config_page\" style=\"font-size:23px\">WiFi Config </a> \
+    <br/> \
+    <script type=\"text/javascript\"> \
+        function switchOn() { \
+            fetch(\"http://%s/?switch_on\").then(() => window.location.reload()); \
+        } \
+        function switchOff() { \
+            fetch(\"http://%s/?switch_off\").then(() => window.location.reload()); \
+        } \
+    </script> \
 </body> \
 </html> \
 ";
+    char* domainName = getDomainName();
     sprintf(strWebPage, strHtmlTemplate,
         getSwitchOnStatus()->color, getSwitchOffStatus()->color,
         getSwitchStatusColor(), getSwitchStatusText(),
-        getSwitchOnStatus()->disabled, getSwitchOffStatus()->disabled);
+        getSwitchOnStatus()->disabled, getSwitchOffStatus()->disabled,
+        domainName, domainName);
     return strWebPage;
 }
 
-char* getWebPage(bool bStatusChange, bool switchStatus) {
-    if (bStatusChange) {
-        G_SWITCH_STATUE = switchStatus;
-    }
+void setSwitchStatue(bool switchStatus) {
+    G_SWITCH_STATUS = switchStatus;
+}
+
+char* getWebPage() {
     return _doGenWebPage();
 }
 

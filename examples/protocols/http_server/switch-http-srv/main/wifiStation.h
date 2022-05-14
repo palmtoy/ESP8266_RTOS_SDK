@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "lwip/netif.h"
 #include "freertos/event_groups.h"
 #include "httpSrv.h"
 
@@ -56,8 +57,7 @@ static void disconnect_handler(void* arg, esp_event_base_t event_base, int32_t e
     stopHttpSrv();
 }
 
-bool wifi_init_sta(char* wifiSSID, char* wifiPwd)
-{
+bool wifi_init_sta(char* wifiSSID, char* wifiPwd, const char* domainName) {
     bool bConnected = false;
     s_wifi_event_group = xEventGroupCreate();
 
@@ -90,8 +90,17 @@ bool wifi_init_sta(char* wifiSSID, char* wifiPwd)
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
-    ESP_LOGI(STATION_TAG, "wifi_init_station finished.");
+    struct netif * netif = NULL;
+    void * nif = NULL;
+    esp_err_t err = tcpip_adapter_get_netif(TCPIP_ADAPTER_IF_STA, &nif);
+    if (err) {
+        ESP_LOGE(STATION_TAG, "Get netif Failed.");
+        return bConnected;
+    }
+    netif = (struct netif *)nif;
+    netif_set_hostname(netif, domainName);
 
+    ESP_LOGI(STATION_TAG, "wifi_init_station finished.");
     /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
      * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
     EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,

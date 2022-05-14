@@ -104,9 +104,10 @@ struct S_JSON_CONFIG* getJsonDict() {
     return &G_JSON_DICT;
 }
 
-esp_err_t saveWiFiConfig(const char* buf, const char* wifiSSID)
+esp_err_t saveWiFiConfig(char* buf, const char* wifiSSID)
 {
     if (strlen(wifiSSID) <= 0) {
+        free(buf);
         return ESP_FAIL;
     }
     const char* pFileName = "/spiffs/wifi_config.txt";
@@ -114,10 +115,12 @@ esp_err_t saveWiFiConfig(const char* buf, const char* wifiSSID)
     ESP_LOGI(SPIFFS_FS_TAG, "Opening file ...");
     FILE* f = fopen(pFileName, "w");
     if (f == NULL) {
+        free(buf);
         ESP_LOGE(SPIFFS_FS_TAG, "Failed to open file for writing");
         return ESP_FAIL;
     }
     fprintf(f, "%s\n", buf);
+    free(buf);
     fclose(f);
     ESP_LOGI(SPIFFS_FS_TAG, "File written.");
 

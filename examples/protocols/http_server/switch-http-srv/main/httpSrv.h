@@ -20,9 +20,7 @@ extern "C" {
 #define GPIO_LV_LOW 1
 
 static const char *HTTP_SRV_TAG = "HTTP-SRV";
-
 static httpd_handle_t httpSrvObj = NULL;
-
 
 
 static void initLEDs(void) {
@@ -73,9 +71,16 @@ esp_err_t root_get_handler(httpd_req_t *req)
     }
     char* resp_str = NULL;
     if (bWiFiConfig) {
-      resp_str = getWiFiConfigPage();
+        resp_str = getWiFiConfigPage();
     } else {
-      resp_str = getWebPage(bStatusChange, switchStatus);
+        if (bStatusChange) {
+            setSwitchStatue(switchStatus);
+            char tmpStr[] = "200 OK";
+            resp_str = malloc(strlen(tmpStr) + 1);
+            sprintf(resp_str, "%s", tmpStr);
+        } else {
+            resp_str = getWebPage();
+        }
     }
     httpd_resp_send(req, (const char*)resp_str, strlen(resp_str));
     free(resp_str);
@@ -113,6 +118,7 @@ esp_err_t wifiConfigUriHandler(httpd_req_t *req)
             if (cnt == HTTPD_SOCK_ERR_TIMEOUT) {
                 continue; // Retry receiving if timeout occurred
             }
+            free(buf);
             const char* resp_str = "Message: WiFi config failed.";
             httpd_resp_send(req, resp_str, strlen(resp_str));
             return ESP_FAIL;
@@ -147,6 +153,7 @@ esp_err_t wifiConfigUriHandler(httpd_req_t *req)
         initSpiffs();
         return saveWiFiConfig(buf, wifiSSID);
     }
+    free(buf);
     const char* resp_str = "Message: WiFi config failed.";
     httpd_resp_send(req, resp_str, strlen(resp_str));
     return ESP_OK;
