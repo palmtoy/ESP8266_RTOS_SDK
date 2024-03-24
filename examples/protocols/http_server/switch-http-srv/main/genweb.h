@@ -134,6 +134,10 @@ void setSwitchStatue(bool switchStatus) {
     G_SWITCH_STATUS = switchStatus;
 }
 
+bool getSwitchStatue() {
+    return G_SWITCH_STATUS;
+}
+
 char* getWebPage() {
     return _doGenWebPage();
 }

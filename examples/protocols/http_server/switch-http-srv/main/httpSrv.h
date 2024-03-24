@@ -13,7 +13,7 @@ extern "C" {
 #include "spiffsFS.h"
 #include "genweb.h"
 #include "wifiConfigWeb.h"
-#include "pwmLED.h"
+// #include "pwmLED.h"
 
 #define SWITCH_GPIO_POWER 0
 #define GPIO_LV_HIGH 0
@@ -62,6 +62,10 @@ esp_err_t root_get_handler(httpd_req_t *req)
             } else if (strcmp(buf, "switch_off") == 0) {
                 bStatusChange = true;
                 switchStatus = false;
+                switchLEDs(switchStatus);
+            } else if (strcmp(buf, "switch") == 0) {
+                bStatusChange = true;
+                switchStatus = !getSwitchStatue();
                 switchLEDs(switchStatus);
             } else if (strcmp(buf, "wifi_config_page") == 0) {
                 bWiFiConfig = true;
