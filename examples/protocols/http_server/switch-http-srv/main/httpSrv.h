@@ -79,7 +79,8 @@ esp_err_t root_get_handler(httpd_req_t *req)
     } else {
         if (bStatusChange) {
             setSwitchStatue(switchStatus);
-            char tmpStr[] = "200 OK";
+            char tmpStr[16] = {0};
+            sprintf(tmpStr, "%s ~ %s", "200 OK", (switchStatus ? "ON" : "OFF"));
             resp_str = malloc(strlen(tmpStr) + 1);
             sprintf(resp_str, "%s", tmpStr);
         } else {
