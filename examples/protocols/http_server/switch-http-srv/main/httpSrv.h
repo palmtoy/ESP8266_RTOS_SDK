@@ -13,7 +13,7 @@ extern "C" {
 #include "spiffsFS.h"
 #include "genweb.h"
 #include "wifiConfigWeb.h"
-// #include "pwmLED.h"
+#include "pwmLED.h"
 
 #define SWITCH_GPIO_POWER 0
 #define GPIO_LV_HIGH 0
@@ -33,11 +33,11 @@ static void switchLEDs(bool bSwitchOn)
     if (bSwitchOn) {
         gpio_set_level(SWITCH_GPIO_POWER, GPIO_LV_HIGH);
         ESP_LOGI(HTTP_SRV_TAG, "Turn on the power LED");
-        // startPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call.
+        startPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call. ( ESP01S does have PWM LED )
     } else {
         gpio_set_level(SWITCH_GPIO_POWER, GPIO_LV_LOW);
         ESP_LOGI(HTTP_SRV_TAG, "Turn off the power LED");
-        // stopPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call.
+        stopPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call. ( ESP01S does have PWM LED )
     }
 }
 
@@ -154,7 +154,7 @@ esp_err_t wifiConfigUriHandler(httpd_req_t *req)
         ESP_LOGI(HTTP_SRV_TAG, "Found POST request parameters => ssid=%s, wifiPwd=%s", wifiSSID, wifiPwd);
         const char* resp_str = "200 OK";
         httpd_resp_send(req, resp_str, strlen(resp_str));
-        // stopPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call.
+        stopPwmLED(); // As ESP01 does NOT have PWM LED, skip this func's call. ( ESP01S does have PWM LED )
         initSpiffs();
         return saveWiFiConfig(buf, wifiSSID);
     }
